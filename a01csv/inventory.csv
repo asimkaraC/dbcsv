@@ -1,0 +1,21 @@
+ProductID,Name,Category,Quantity,Price
+1,Mouse,Electronics,115,25.99
+2,Speakers,Electronics,30,79.99
+3,Monitor,Electronics,22,179
+4,Keyboard,Electronics,18,89.99
+5,Smartphone,Electronics,20,599.99
+6,Webcam,Electronics,40,34.99
+7,Laptop,Electronics,25,29.99
+8,USB Cable,Accessories,50,45
+9,AirTag,Accessories,60,24.99
+10,Wireless Earbuds,Electronics,35,55
+11,Smartwatch,Wearables,20,199.99
+12,Fitness Tracker,Wearables,25,79.99
+13,VR Headset,Gaming,10,299.99
+14,Controller,Gaming,45,59.99
+15,Standing Desk,Furniture,12,499
+16,Headphones,Electronics,20,120
+17,Router,Networking,15,99.99
+18,Portable Drive,Storage,30,89.99
+19,USB Stick,Storage,100,15
+20,Ethernet Cable,Networking,75,10.99
