@@ -7,6 +7,7 @@
 #define STRING_SIZE 30
 #define BUFFER_SIZE 100
 #define INPUT_SIZE 3
+#define MAX_ROWS 40
 #define READ 1
 #define ADD 2
 #define UPDATE 3
@@ -15,7 +16,7 @@
 
 void read(char* filename);
 void add(char* filename, struct Inventory* addedItem);
-void update(char* filename, int productID, struct Inventory* updatedItem);
+void update(char* filename, int productID, struct Inventory* itemToUpdate);
 void deleteItem(char* filename, int productID);
 
 struct Inventory* createItem(int id, char* name, char* category, int quantity, float price);
@@ -31,14 +32,10 @@ typedef struct Inventory
 
 int main(void)
 {
-	char filename[] = "inventory.csv";	
+	char filename[] = "inventory - Copy.csv";	
 
 	int menuInput = 0;
 	int idInput = 0;
-	char nameInput[STRING_SIZE] = { 0 };
-	char categoryInput[STRING_SIZE] = { 0 };
-	int quantityInput = 0;
-	float priceInput = 0.00;
 	char menuBuffer[INPUT_SIZE] = { 0 };
 	char inputBuffer[STRING_SIZE] = { 0 };
 
@@ -66,60 +63,34 @@ int main(void)
 		}
 		else if (menuInput == ADD)
 		{
-			printf("Please enter the Product ID of the new item: ");
-			fgets(inputBuffer, sizeof(inputBuffer), stdin);
-			if (sscanf_s(inputBuffer, "%d", &idInput) == 1)
-			{
-				idInput = atoi(inputBuffer);
-
-				printf("Please enter the Name of the new item: ");
-				fgets(inputBuffer, sizeof(inputBuffer), stdin);
-				if (sscanf_s(inputBuffer, "%s", nameInput, STRING_SIZE) == 1)
-				{
-					printf("Please enter the Category of the new item: ");
-					fgets(inputBuffer, sizeof(inputBuffer), stdin);
-					if (sscanf_s(inputBuffer, "%s", categoryInput, STRING_SIZE) == 1)
-					{
-						printf("Please enter the Quantity of the new item: ");
-						fgets(inputBuffer, sizeof(inputBuffer), stdin);
-						if (sscanf_s(inputBuffer, "%d", &quantityInput) == 1)
-						{
-							quantityInput = atoi(inputBuffer);
-
-							printf("Please enter the Price of the new item: ");
-							fgets(inputBuffer, sizeof(inputBuffer), stdin);
-							if (sscanf_s(inputBuffer, "%f", &priceInput) == 1)
-							{
-								priceInput = atof(inputBuffer);
-
-								Inventory* addedItem = createItem(idInput, nameInput, categoryInput, quantityInput, priceInput);
-								add(filename, addedItem);
-								free(addedItem);
-							}
-						}
-					}
-				}
-			}
-			printf("\n");
+			Inventory* itemToAdd = createItem(21, (char*)"Running Shoes", (char*)"Footwear", 220, 179.99);
+			add(filename, itemToAdd);
+			printf("Product ID %d - added\n\n", itemToAdd->productID);
+			free(itemToAdd);
 		}
 		else if (menuInput == UPDATE)
 		{
-			//update(filename);
-			printf("\n");
+			Inventory* itemToUpdate = createItem(7, (char*)"Sunglasses", (char*)"Accessories", 8, 349);
+			update(filename, itemToUpdate->productID, itemToUpdate);
+			printf("Product ID %d - updated\n\n", itemToUpdate->productID);
+			free(itemToUpdate);
 		}
 		else if (menuInput == DELETE)
 		{
-			printf("Please enter the Product ID of the item that will be deleted: ");
+			/*printf("Please enter the Product ID of the item that will be deleted: ");
 			fgets(inputBuffer, sizeof(inputBuffer), stdin);
 			if (sscanf_s(inputBuffer, "%d", &idInput) == 1)
 			{
 				idInput = atoi(inputBuffer);
-				//deleteItem(filename, idInput);
+				deleteItem(filename, idInput);
 				printf("\n");
-			}
+			}*/
+
 		}
 
 	} while (menuInput != 5);
+
+	return 0;
 }
 
 struct Inventory* createItem(int id, char* name, char* category, int quantity, float price)
@@ -131,7 +102,6 @@ struct Inventory* createItem(int id, char* name, char* category, int quantity, f
 		exit(EXIT_FAILURE);
 	}
 
-	newItem->productID = id;
 	newItem->name = (char*)malloc(STRING_SIZE * sizeof(char));
 	newItem->category = (char*)malloc(STRING_SIZE * sizeof(char));
 
@@ -142,6 +112,7 @@ struct Inventory* createItem(int id, char* name, char* category, int quantity, f
 	}
 	else
 	{
+		newItem->productID = id;
 		strcpy(newItem->name, name);
 		strcpy(newItem->category, category);
 		newItem->quantity = quantity;
@@ -163,7 +134,7 @@ void read(char* filename)
 	char buffer[BUFFER_SIZE] = { 0 };
 	Inventory Item = { 0 };
 
-	fgets(buffer, sizeof(buffer), pFile);
+	fgets(buffer, sizeof(buffer), pFile); // Skip the header row
 
 	printf("Product ID\tName\t\t\t\tCategory\t\tQuantity\tPrice\n\n");
 
@@ -171,6 +142,7 @@ void read(char* filename)
 	{
 		Item.name = (char*)malloc(STRING_SIZE * sizeof(char));
 		Item.category = (char*)malloc(STRING_SIZE * sizeof(char));
+
 		if ((Item.name == NULL) || (Item.category == NULL))
 		{
 			printf("Error allocating memory\n");
@@ -200,7 +172,7 @@ void read(char* filename)
 	}
 }
 
-void add(char* filename, Inventory* addedItem)
+void add(char* filename, Inventory* itemToAdd)
 {
 	FILE* pFile = fopen(filename, "a");
 	if (pFile == NULL)
@@ -209,8 +181,7 @@ void add(char* filename, Inventory* addedItem)
 		exit(EXIT_FAILURE);
 	}
 
-	//fprintf(pFile, "%d,%s,%s,%d,%.2f\n", addedItem->productID, addedItem->name, addedItem->category, addedItem->quantity, addedItem->price);
-	fprintf(pFile, "%d,%s,%s,%d,%f\n", addedItem->productID, addedItem->name, addedItem->category, addedItem->quantity, addedItem->price);
+	fprintf(pFile, "%d,%s,%s,%d,%.2f\n", itemToAdd->productID, itemToAdd->name, itemToAdd->category, itemToAdd->quantity, itemToAdd->price);
 
 	if (fclose(pFile) != 0)
 	{
@@ -219,3 +190,104 @@ void add(char* filename, Inventory* addedItem)
 	}
 }
 
+void update(char* filename, int productID, struct Inventory* itemToUpdate)
+{
+	FILE* pFile = fopen(filename, "r");
+	if (pFile == NULL)
+	{
+		printf("Error opening the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	Inventory* ItemByLine = (Inventory*)malloc(sizeof(Inventory) * MAX_ROWS);
+	if (ItemByLine == NULL)
+	{
+		printf("Error allocating memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	char buffer[BUFFER_SIZE] = { 0 };
+	int line = 0;
+
+	fgets(buffer, sizeof(buffer), pFile);
+
+	while ((fgets(buffer, sizeof(buffer), pFile) != NULL) && (line < MAX_ROWS))
+	{
+		ItemByLine[line].name = (char*)malloc(sizeof(char) * STRING_SIZE);
+		ItemByLine[line].category = (char*)malloc(sizeof(char) * STRING_SIZE);
+
+		if ((ItemByLine[line].name == NULL) || (ItemByLine[line].category == NULL))
+		{
+			printf("Error allocating memory\n");
+			exit(EXIT_FAILURE);
+		}
+
+		if (sscanf_s(buffer, "%d,%30[^,],%30[^,],%d,%f", &ItemByLine[line].productID, ItemByLine[line].name, STRING_SIZE,
+			ItemByLine[line].category, STRING_SIZE, &ItemByLine[line].quantity, &ItemByLine[line].price) == 5)
+		{
+			if (ItemByLine[line].productID == itemToUpdate->productID)
+			{
+				free(ItemByLine[line].name);
+				free(ItemByLine[line].category);
+
+				ItemByLine[line].name = (char*)malloc(sizeof(char) * STRING_SIZE);
+				ItemByLine[line].category = (char*)malloc(sizeof(char) * STRING_SIZE);
+
+				strcpy(ItemByLine[line].name, itemToUpdate->name);
+				strcpy(ItemByLine[line].category, itemToUpdate->category);
+				ItemByLine[line].quantity = itemToUpdate->quantity;
+				ItemByLine[line].price = itemToUpdate->price;
+			}
+		}
+
+		line++;
+	}
+
+	if (fclose(pFile) != 0)
+	{
+		printf("Error closing the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	FILE* overwrittenFile = fopen(filename, "w");
+	if (overwrittenFile == NULL)
+	{
+		printf("Error opening the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	strcpy(buffer, "");
+	int row = 0;
+
+	fprintf(overwrittenFile, "Product ID,Name,Category,Quantity,Price\n");
+
+	while (row < line)
+	{
+		fprintf(overwrittenFile, "%d,%s,%s,%d,%.2f\n", ItemByLine[row].productID, ItemByLine[row].name, ItemByLine[row].category, ItemByLine[row].quantity, ItemByLine[row].price);		
+
+		free(ItemByLine[row].name);
+		free(ItemByLine[row].category);
+
+		row++;
+	}	
+
+	free(ItemByLine);
+
+	if (fclose(overwrittenFile) != 0)
+	{
+		printf("Error closing the file\n");
+		exit(EXIT_FAILURE);
+	}	
+}
+
+void deleteItem(char* filename, int productID)
+{
+	FILE* pFile = fopen(filename, "r");
+	if (pFile == NULL)
+	{
+		printf("Error opening the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+
+}
