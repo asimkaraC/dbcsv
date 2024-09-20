@@ -4,6 +4,7 @@
 #include <string.h>
 #pragma warning (disable: 4996)
 
+/* CONSTANTS */
 #define STRING_SIZE 30
 #define BUFFER_SIZE 100
 #define INPUT_SIZE 3
@@ -14,13 +15,14 @@
 #define DELETE 4
 #define EXIT 5
 
+/* FUNCTION PROTOTYPES */
+struct Inventory* createItem(int id, char* name, char* category, int quantity, float price);
 void read(char* filename);
 void add(char* filename, struct Inventory* addedItem);
 void update(char* filename, int productID, struct Inventory* itemToUpdate);
 void deleteItem(char* filename, int productID);
 
-struct Inventory* createItem(int id, char* name, char* category, int quantity, float price);
-
+/* STRUCT */
 typedef struct Inventory
 {
 	int productID;
@@ -30,6 +32,7 @@ typedef struct Inventory
 	float price;
 } Inventory;
 
+/* MAIN */
 int main(void)
 {
 	char filename[] = "inventory - Copy.csv";	
@@ -77,14 +80,14 @@ int main(void)
 		}
 		else if (menuInput == DELETE)
 		{
-			/*printf("Please enter the Product ID of the item that will be deleted: ");
+			printf("Please enter the Product ID of the item that will be deleted: ");
 			fgets(inputBuffer, sizeof(inputBuffer), stdin);
 			if (sscanf_s(inputBuffer, "%d", &idInput) == 1)
 			{
 				idInput = atoi(inputBuffer);
 				deleteItem(filename, idInput);
 				printf("\n");
-			}*/
+			}
 
 		}
 
@@ -289,5 +292,77 @@ void deleteItem(char* filename, int productID)
 		exit(EXIT_FAILURE);
 	}
 
+	Inventory* ItemByLine = (Inventory*)malloc(sizeof(Inventory) * MAX_ROWS);
+	if (ItemByLine == NULL)
+	{
+		printf("Error allocating memory\n");
+		exit(EXIT_FAILURE);
+	}
 
+	char buffer[BUFFER_SIZE] = { 0 };
+	int line = 0;
+
+	fgets(buffer, sizeof(buffer), pFile);
+
+	while ((fgets(buffer, sizeof(buffer), pFile) != NULL) && (line < MAX_ROWS))
+	{
+		ItemByLine[line].name = (char*)malloc(sizeof(char) * STRING_SIZE);
+		ItemByLine[line].category = (char*)malloc(sizeof(char) * STRING_SIZE);
+
+		if ((ItemByLine[line].name == NULL) || (ItemByLine[line].category == NULL))
+		{
+			printf("Error allocating memory\n");
+			exit(EXIT_FAILURE);
+		}
+
+		if (sscanf_s(buffer, "%d,%30[^,],%30[^,],%d,%f", &ItemByLine[line].productID, ItemByLine[line].name, STRING_SIZE,
+			ItemByLine[line].category, STRING_SIZE, &ItemByLine[line].quantity, &ItemByLine[line].price) == 5)
+		{
+			if (ItemByLine[line].productID == productID)
+			{
+				free(ItemByLine[line].name);
+				free(ItemByLine[line].category);
+			}
+			else
+			{
+				line++;
+			}
+		}
+	}
+
+	if (fclose(pFile) != 0)
+	{
+		printf("Error closing the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	FILE* fileAfterDeletion = fopen(filename, "w");
+	if (fileAfterDeletion == NULL)
+	{
+		printf("Error opening the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	strcpy(buffer, "");
+	int row = 0;
+
+	fprintf(fileAfterDeletion, "Product ID,Name,Category,Quantity,Price\n");
+
+	while (row < line)
+	{
+		fprintf(fileAfterDeletion, "%d,%s,%s,%d,%.2f\n", ItemByLine[row].productID, ItemByLine[row].name, ItemByLine[row].category, ItemByLine[row].quantity, ItemByLine[row].price);
+
+		free(ItemByLine[row].name);
+		free(ItemByLine[row].category);
+
+		row++;
+	}
+
+	free(ItemByLine);
+
+	if (fclose(fileAfterDeletion) != 0)
+	{
+		printf("Error closing the file\n");
+		exit(EXIT_FAILURE);
+	}
 }

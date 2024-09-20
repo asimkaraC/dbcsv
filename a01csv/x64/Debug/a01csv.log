@@ -1,3 +1,3 @@
 ﻿  a01csv.cpp
-C:\Users\Asim Kara\Desktop\A01csv\a01csv\a01csv.cpp(106,90): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\Asim Kara\Desktop\A01csv\a01csv\a01csv.cpp(66,90): warning C4305: 'argument': truncation from 'double' to 'float'
   a01csv.vcxproj -> C:\Users\Asim Kara\Desktop\A01csv\x64\Debug\a01csv.exe
